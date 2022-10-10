@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
-import argparse
-import os,json
-import queue
+import json,queue,sys,time
 import sounddevice as sd
-import vosk
-import sys
+import vosk,openai,pyttsx3
 
-import openai
-import pyttsx3
+fkey = open('key.txt','r')
 
-openai.api_key = "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"
+openai.api_key = fkey.readline()
+print(openai.api_key)
 
 synthesizer = pyttsx3.init()
 
@@ -19,7 +16,7 @@ synthesizer.setProperty('voice', voice_id)
 synthesizer.setProperty('rate', 210)
 
 nom = "Laura"
-conv = nom+" est une voyante très sûre d'elle et peut prédire l'avenir sur tout les sujets.\n"
+conv = nom+" est très heureuse. Elle est spécialiste en expressions idiomatiques françaises.\n"
 
 q = queue.Queue()
 
@@ -33,7 +30,7 @@ try:
     # model = vosk.Model(model_name="vosk-model-fr-0.22")
     model = vosk.Model(model_name="vosk-model-small-fr-0.22")
 
-    with sd.RawInputStream(samplerate=44100, blocksize = 8000, device=None, dtype='int16',channels=1, callback=callback):
+    with sd.RawInputStream(samplerate=44100, blocksize = 8000, device=1, dtype='int16',channels=1, callback=callback):
         rec = vosk.KaldiRecognizer(model, 44100)
         print("Début de l'écoute")
         while True:
@@ -63,6 +60,9 @@ try:
 
 
 except KeyboardInterrupt:
+    f = open("conversations/"+str(int(time.time()))+'.txt','w',encoding='utf-8')
+    f.write(conv)
+    f.close()
     print('\nDone')
 except Exception as e:
     print(str(e))
