@@ -53,7 +53,7 @@ if __name__ == "__main__":
     cc=0.0
     tilt=0.0
     w=20.0
-    for i in range(1000):
+    while True:
         try:
             t0 = time.time()
             resp =requests.get('http://'+robotIP+'/sensors/camera/frame.png')
@@ -64,22 +64,26 @@ if __name__ == "__main__":
             img = dlib.load_rgb_image('image.png')
             dets = detector(img, 1)
             if len(dets) > 0:
-                print(dets[0].center())
+                # print(dets[0].center())
                 img_shape = sp(img, dets[0])
                 theta=img_shape.parts()[0].y-img_shape.parts()[2].y
                 x = dets[0].center().x
                 y = dets[0].center().y
                 w = 1.0*np.abs(img_shape.parts()[0].x-img_shape.parts()[2].x)
-                print(w)
                 xc = xc+0.05*(x-320)
                 cc = cc-0.07*xc
                 yc = yc+0.02*(y-240)
-                tilt = tilt+0.3*theta
+                tilt = tilt+0.5*theta
+            cc = np.clip(cc,-40,40)
+            xc = np.clip(xc,-90,90)
+            yc = np.clip(yc,-30,30)
+            tilt = np.clip(tilt,-30,30)
+            w = np.clip(w,-50,50)
             motorGoto(robotIP,[cc,w-20,-w+20+yc,tilt,xc,xc],0.1)
                 # 
                 # print(img_shape)
                 # img_aligned = dlib.get_face_chip(img, img_shape)
-            print(i,time.time()-t0)
+            # print(i,time.time()-t0)
         except Exception as e:
             print(e)
             break
